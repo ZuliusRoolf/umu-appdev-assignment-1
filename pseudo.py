@@ -24,72 +24,41 @@ def select_score(dice, score):
                 low += value if value <= 3 else 0
             s  += f"{SCORE_OPTIONS[i]} {low}\n"
             continue
-        s  += f"{SCORE_OPTIONS[i]} {find_combinations(sorted_dice, i+3)}\n"
-        s  += f"{SCORE_OPTIONS[i]} {count_score(sorted_dice, i+3)}\n"
+        s  += f"{SCORE_OPTIONS[i]} {len(find_combinations(sorted_dice, i+3))*(i+3)}\n"
     print(s)
     display_dice(sorted_dice)
 
-# def count_score(dice, value):
-#     d = sorted(dice, reverse=True)
-#     print(d)
-#     s = sum(d)
-#     print(s)
-#     score = (s//value)*value
-#     print(score)
-#     r = s%value
-#     print(r)
-#     if r == 0:
-#         return score
-
-def count_score(dice: list, value: int):
-    combinations = []
-    dice = sorted(dice, reverse=True)
-    def find_combinations(dice: list, target, current_combination):
-        if target == 0:
-            combinations.append(current_combination)
-            return
-        if target < 0 or not dice:
-            return
-        
-        # Include the first die
-        find_combinations(dice[1:], target - dice[0], current_combination + [dice[0]])
-        # Exclude the first die
-        find_combinations(dice[1:], target, current_combination)
-
-    find_combinations(dice, value, [])
-    return combinations
-
-def find_combinations(dice_values, target_sum):
-    def backtrack(start, current_sum, current_combination):
-        if current_sum == target_sum:
-            result.append(list(current_combination))  # Found a valid combination
-            return
-        if current_sum > target_sum:
-            return  # Prune the search if sum exceeds target
-        
-        for i in range(start, len(dice_values)):
-            # Skip duplicate dice values
-            if i > start and dice_values[i] == dice_values[i - 1]:
-                continue
-            # Add current dice to the combination and recurse
-            current_combination.append(dice_values[i])
-            backtrack(i + 1, current_sum + dice_values[i], current_combination)
-            current_combination.pop()  # Backtrack and remove last added dice
-
-    sorted(dice_values, reverse=True)  # Sort the dice values to help with pruning and skipping duplicates
-    result = []
-    backtrack(0, 0, [])
-    return result
-
-def my_count_score(dice, value):
+def find_combinations(dice, target) -> list:
     sorted_dice = sorted(dice, reverse=True)
-    # TODO Create a working function that sorts the dice values, 
-    # take the biggest value and then recursevly combine with smaller values to see if it reaches the target.
-    # If the value is too low then add another number to the combination.
-    # If the value is too high then go to the next number (lower number).
-    # If the value is on target then remove said numbers from the list and rerun the function on the new set.
-    # If there is no combinations then return the list of combinations.
-
+    combinations = []
+    i = 0
+    while i < len(sorted_dice):
+        current_combination = [sorted_dice[i]]
+        j = i + 1
+        success = False
+        # print(f"{sorted_dice}")
+        # print(f"Checking combinations starting with {current_combination} at index {i}")
+        while j < len(sorted_dice):
+            if sum(current_combination) < target:
+                # print(f"Current combination {current_combination} is less than target {target}.")
+                # print(f"Add {sorted_dice[j]} from index {j} to current combination.")
+                current_combination.append(sorted_dice[j])
+            elif sum(current_combination) > target:
+                # print(f"Current combination {current_combination} exceeds target {target}.")
+                # print(f"Replace with {sorted_dice[j]} from index {j} to current combination.")
+                current_combination.pop()
+                current_combination.append(sorted_dice[j])
+            if sum(current_combination) == target:
+                combinations.append(current_combination)
+                success = True
+                # print(f"Found combination: {current_combination}")
+                for num in current_combination:
+                    sorted_dice.remove(num)
+                break
+            j += 1
+        i += 1 if not success else 0
+    
+    return combinations
 
 
 def display_score(score):
@@ -124,13 +93,17 @@ def main():
             if throws <= 0: break
             dice = roll_dice(locked)
 
-        elif user_input in '123456':
+        elif user_input in '123456' and len(user_input) == 1:
             index = int(user_input) - 1
             locked[index] = not locked[index]
+
+        else:
+            print("Invalid input. Please enter a number between 1 and 6, or press Enter to reroll.")
+            continue
     select_score(dice, score)
 
-    
-    
-
 if __name__ == "__main__":
+    # dice = [1, 2, 3, 6, 6, 6]
+    # r = find_combinations(dice, 12)
+    # print("Result: ", r)
     main()
