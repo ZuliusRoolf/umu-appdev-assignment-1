@@ -6,7 +6,8 @@ This repository contains a simple android game called **Thirty** for a [Mobile A
 - The android code resides in [`ThirtyThrows`](ThirtyThrows) directory (Open this folder in Android Studio).
 - Pseudo code for the game logic is written in [`pseudo.py`](pseudo.py).
 
-Fragments:
+## Fragments
+
 - **PlayFragment**
   - 6 WhiteDice icons -> Toggle 'GreyDice icon' when locked
   - Start button -> Reroll button

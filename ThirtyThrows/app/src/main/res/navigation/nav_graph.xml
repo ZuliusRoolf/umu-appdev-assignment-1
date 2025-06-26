@@ -9,5 +9,26 @@
         android:id="@+id/playFragment"
         android:name="se.umu.student.zuro0003.thirtythrows.PlayFragment"
         android:label="fragment_play"
-        tools:layout="@layout/fragment_play" />
+        tools:layout="@layout/fragment_play">
+        <action
+            android:id="@+id/action_playFragment_to_scoreFragment"
+            app:destination="@id/scoreFragment" />
+        <action
+            android:id="@+id/action_playFragment_to_gameOverFragment"
+            app:destination="@id/gameOverFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/scoreFragment"
+        android:name="se.umu.student.zuro0003.thirtythrows.ScoreFragment"
+        android:label="fragment_score"
+        tools:layout="@layout/fragment_score" />
+    <fragment
+        android:id="@+id/gameOverFragment"
+        android:name="se.umu.student.zuro0003.thirtythrows.GameOverFragment"
+        android:label="fragment_game_over"
+        tools:layout="@layout/fragment_game_over">
+        <action
+            android:id="@+id/action_gameOverFragment_to_scoreFragment"
+            app:destination="@id/scoreFragment" />
+    </fragment>
 </navigation>
