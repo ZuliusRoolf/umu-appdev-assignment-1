@@ -70,7 +70,7 @@ class PlayFragment : Fragment() {
             binding.diceRolls.text = getString(R.string.rolls_remaining, viewModel.rolls - 1)
             lifecycleScope.launch {
                 binding.diceThrow.isEnabled = false
-                viewModel.roll()
+                viewModel.rollDice()
                 binding.diceThrow.isEnabled = (viewModel.rolls > 0)
             }
         }
