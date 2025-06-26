@@ -6,6 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import se.umu.student.zuro0003.thirtythrows.databinding.FragmentPlayBinding
 
 class PlayFragment : Fragment() {
@@ -61,6 +63,15 @@ class PlayFragment : Fragment() {
         for (i in dice.indices) {
             dice[i].setOnClickListener {
                 viewModel.toggleDice(i)
+            }
+        }
+        binding.diceRolls.text = getString(R.string.rolls_remaining, viewModel.rolls)
+        binding.diceThrow.setOnClickListener {
+            binding.diceRolls.text = getString(R.string.rolls_remaining, viewModel.rolls - 1)
+            lifecycleScope.launch {
+                binding.diceThrow.isEnabled = false
+                viewModel.roll()
+                binding.diceThrow.isEnabled = (viewModel.rolls > 0)
             }
         }
     }
