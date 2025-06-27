@@ -8,7 +8,7 @@ data class ScoreOption(val title: String, var score: Int, var locked: Boolean)
 
 class ThirtyThrowsViewModel : ViewModel() {
     private val LOW_SUM = 3
-    val dices = MutableLiveData<Array<Int>>(arrayOf(-1, 1, 1, 2, 6, -5))
+    val dices = MutableLiveData<Array<Int>>(Array<Int>(6) { 1 })
     var rolls = 3
     var round = 1
 

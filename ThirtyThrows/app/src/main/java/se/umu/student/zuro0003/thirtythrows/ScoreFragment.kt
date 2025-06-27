@@ -7,13 +7,11 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
-import android.widget.Button
-import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.card.MaterialCardView
 import se.umu.student.zuro0003.thirtythrows.databinding.FragmentScoreBinding
 
 class ScoreFragment() : DialogFragment() {
@@ -38,39 +36,26 @@ class ScoreFragment() : DialogFragment() {
 
         viewModel.scoreBoard.observe(viewLifecycleOwner) { scoreArray ->
             scoreArray.forEach { option ->
-                val row = LinearLayout(context).apply {
-                    orientation = LinearLayout.HORIZONTAL
-                    layoutParams = LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT
-                    )
-                }
+                val rowView = layoutInflater.inflate(R.layout.score_row, binding.scoreTable, false)
 
-                val label = TextView(context).apply {
-                    text = option.title
-                    layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
-                }
+                val card = rowView.findViewById<MaterialCardView>(R.id.scoreRowCard)
+                val titleText = rowView.findViewById<TextView>(R.id.titleText)
+                val scoreText = rowView.findViewById<TextView>(R.id.scoreText)
 
-                val button = Button(context).apply {
-                    text = option.score.toString()
-                    isEnabled = (option.locked == false)
-                    setOnClickListener {
+                titleText.text = option.title
+                scoreText.text = option.score.toString()
+
+                if (option.locked) {
+                    card.isClickable = false
+                    card.alpha = 0.5f  // faded appearance
+                } else {
+                    card.setOnClickListener {
                         option.locked = true
-                        viewModel.nextRound()
-                        if (viewModel.isGameOver()) {
-                            findNavController().navigate(R.id.action_playFragment_to_gameOverFragment)
-                        }
-                        val result = Bundle().apply {
-                            putBoolean("userSelectedScore", true)
-                        }
-                        parentFragmentManager.setFragmentResult("scoreResult", result)
-                        dismiss()
+                        handleSelectedScore()
                     }
                 }
 
-                row.addView(label)
-                row.addView(button)
-                binding.scoreTable.addView(row)
+                binding.scoreTable.addView(rowView)
             }
         }
     }
@@ -81,6 +66,18 @@ class ScoreFragment() : DialogFragment() {
     ): View? {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_score, container, false)
+    }
+
+    fun handleSelectedScore() {
+        viewModel.nextRound()
+        if (viewModel.isGameOver()) {
+            findNavController().navigate(R.id.action_playFragment_to_gameOverFragment)
+        }
+        val result = Bundle().apply {
+            putBoolean("userSelectedScore", true)
+        }
+        parentFragmentManager.setFragmentResult("scoreResult", result)
+        dismiss()
     }
 
     override fun onCancel(dialog: DialogInterface) {
