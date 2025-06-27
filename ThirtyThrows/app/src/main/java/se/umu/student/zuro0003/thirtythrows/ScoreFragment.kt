@@ -13,6 +13,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import se.umu.student.zuro0003.thirtythrows.databinding.FragmentScoreBinding
 
 class ScoreFragment() : DialogFragment() {
@@ -55,6 +56,10 @@ class ScoreFragment() : DialogFragment() {
                     isEnabled = (option.locked == false)
                     setOnClickListener {
                         option.locked = true
+                        viewModel.nextRound()
+                        if (viewModel.isGameOver()) {
+                            findNavController().navigate(R.id.action_playFragment_to_gameOverFragment)
+                        }
                         val result = Bundle().apply {
                             putBoolean("userSelectedScore", true)
                         }

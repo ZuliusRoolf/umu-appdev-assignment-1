@@ -10,7 +10,7 @@ class ThirtyThrowsViewModel : ViewModel() {
     private val LOW_SUM = 3
     val dices = MutableLiveData<Array<Int>>(arrayOf(-1, 1, 1, 2, 6, -5))
     var rolls = 3
-    var rounds = 10
+    var round = 1
 
     val scoreNames = listOf<String>(
         "Lows",
@@ -25,13 +25,45 @@ class ThirtyThrowsViewModel : ViewModel() {
         "Twelves"
     )
     val scoreBoard = MutableLiveData<Array<ScoreOption>>(
-        Array(10) { i ->
+        Array(scoreNames.size) { i ->
             ScoreOption(scoreNames[i], score = 0, locked = false)
         }
     )
 
+    fun resetGame() {
+        rolls = 3
+        round = 1
+        dices.value = Array<Int>(6) { 1 }
+        scoreBoard.value = Array<ScoreOption>(scoreNames.size) { i ->
+            ScoreOption(scoreNames[i], score = 0, locked = false)
+        }
+    }
+
+    fun nextRound() {
+        val currentArray = dices.value ?: return
+        val newArray = currentArray.copyOf()
+        for (i in newArray.indices)
+            if (newArray[i] < 0) newArray[i] *= -1
+        dices.value = newArray
+        rolls = 3
+        round++
+    }
+
+    fun isGameOver(): Boolean {
+        return round > scoreNames.size
+    }
+
+    fun getFinalScore(): Int {
+        val currentArray = scoreBoard.value ?: return 0
+        var totalScore = 0
+        for (option in currentArray) {
+            totalScore += option.score
+        }
+        return totalScore
+    }
 
     fun toggleDice(index: Int) {
+        if (rolls == 3) return
         val currentArray = dices.value ?: return
 
         val newArray = currentArray.copyOf()

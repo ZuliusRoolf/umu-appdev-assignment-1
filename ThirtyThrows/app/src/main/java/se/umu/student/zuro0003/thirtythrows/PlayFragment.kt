@@ -65,6 +65,8 @@ class PlayFragment : Fragment() {
                 viewModel.toggleDice(i)
             }
         }
+
+        binding.diceRound.text = getString(R.string.round_count, viewModel.round)
         binding.diceRolls.text = getString(R.string.rolls_remaining, viewModel.rolls)
         val dialog = ScoreFragment()
         binding.diceThrow.setOnClickListener {
@@ -93,13 +95,16 @@ class PlayFragment : Fragment() {
             if (bundle.getBoolean("userSelectedScore")) {
                 binding.diceThrow.text = getString(R.string.dice_throw)
                 binding.diceRolls.text = getString(R.string.rolls_remaining, viewModel.rolls)
-                binding.diceRound.text = getString(R.string.round_count, viewModel.rounds)
-                viewModel.rolls = 3
-                viewModel.rounds += 1
+                binding.diceRound.text = getString(R.string.round_count, viewModel.round)
             } else {
                 binding.diceThrow.text = getString(R.string.select_score)
             }
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null  // prevent memory leaks
     }
 
 }
