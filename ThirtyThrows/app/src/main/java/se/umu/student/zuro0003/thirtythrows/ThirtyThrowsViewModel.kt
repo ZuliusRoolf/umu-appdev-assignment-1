@@ -4,11 +4,15 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.delay
 
+data class ScoreOption(val title: String, var score: Int, var locked: Boolean)
+
 class ThirtyThrowsViewModel : ViewModel() {
+    private val LOW_SUM = 3
     val dices = MutableLiveData<Array<Int>>(arrayOf(-1, 1, 1, 2, 6, -5))
     var rolls = 3
+    var rounds = 10
 
-    var SCORE_OPTIONS = listOf<String>(
+    val scoreNames = listOf<String>(
         "Lows",
         "Fours",
         "Fives",
@@ -20,6 +24,12 @@ class ThirtyThrowsViewModel : ViewModel() {
         "Elevens",
         "Twelves"
     )
+    val scoreBoard = MutableLiveData<Array<ScoreOption>>(
+        Array(10) { i ->
+            ScoreOption(scoreNames[i], score = 0, locked = false)
+        }
+    )
+
 
     fun toggleDice(index: Int) {
         val currentArray = dices.value ?: return
@@ -43,6 +53,18 @@ class ThirtyThrowsViewModel : ViewModel() {
         }
     }
 
+    fun updateScoreBoard(): Array<ScoreOption> {
+        val currentScoreBoard = scoreBoard.value ?: return scoreBoard.value
+        val updatedScoreBoard = currentScoreBoard.copyOf()
+        for (i in updatedScoreBoard.indices) {
+            if (updatedScoreBoard[i].locked) continue
+            val target = if (i == 0) 0 else i + LOW_SUM
+            updatedScoreBoard[i].score = getScore(target)
+        }
+        scoreBoard.value = updatedScoreBoard
+        return scoreBoard.value
+    }
+
     fun getScore(target: Int): Int {
         val currentArray = dices.value ?: return -1
         // Convert locked/negative dice to regular dice
@@ -51,7 +73,7 @@ class ThirtyThrowsViewModel : ViewModel() {
         if (target == 0) {
             var score = 0
             for (num in original) {
-                score += if (num <= 3) num else 0
+                score += if (num <= LOW_SUM) num else 0
             }
             return score
         }

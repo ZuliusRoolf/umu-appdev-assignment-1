@@ -1,31 +1,72 @@
 package se.umu.student.zuro0003.thirtythrows
 
+import android.app.AlertDialog
+import android.app.Dialog
+import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
+import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+import android.widget.Button
+import android.widget.LinearLayout
+import android.widget.TextView
+import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.activityViewModels
+import se.umu.student.zuro0003.thirtythrows.databinding.FragmentScoreBinding
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
+class ScoreFragment() : DialogFragment() {
 
-/**
- * A simple [Fragment] subclass.
- * Use the [ScoreFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
-class ScoreFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+    private var _binding: FragmentScoreBinding? = null
+    private val binding
+        get() = checkNotNull(_binding) {
+            "Cannot access binding because it is null. Is the view visible?"
+        }
+    private val viewModel: ThirtyThrowsViewModel by activityViewModels()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        _binding = FragmentScoreBinding.inflate(requireActivity().layoutInflater)
+
+        return AlertDialog.Builder(requireContext())
+            .setView(binding.root)
+            .create()
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        viewModel.scoreBoard.observe(viewLifecycleOwner) { scoreArray ->
+            scoreArray.forEach { option ->
+                val row = LinearLayout(context).apply {
+                    orientation = LinearLayout.HORIZONTAL
+                    layoutParams = LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                    )
+                }
+
+                val label = TextView(context).apply {
+                    text = option.title
+                    layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
+                }
+
+                val button = Button(context).apply {
+                    text = option.score.toString()
+                    isEnabled = (option.locked == false)
+                    setOnClickListener {
+                        option.locked = true
+                        val result = Bundle().apply {
+                            putBoolean("userSelectedScore", true)
+                        }
+                        parentFragmentManager.setFragmentResult("scoreResult", result)
+                        dismiss()
+                    }
+                }
+
+                row.addView(label)
+                row.addView(button)
+                binding.scoreTable.addView(row)
+            }
         }
     }
 
@@ -37,23 +78,17 @@ class ScoreFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_score, container, false)
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment ScoreFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            ScoreFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
+    override fun onCancel(dialog: DialogInterface) {
+        super.onCancel(dialog)
+        val result = Bundle().apply {
+            putBoolean("userSelectedScore", false)
+        }
+        parentFragmentManager.setFragmentResult("scoreResult", result)
     }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null  // prevent memory leaks
+    }
+
 }

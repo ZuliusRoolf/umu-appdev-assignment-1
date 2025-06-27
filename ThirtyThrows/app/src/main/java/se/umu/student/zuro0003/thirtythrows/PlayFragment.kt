@@ -66,12 +66,38 @@ class PlayFragment : Fragment() {
             }
         }
         binding.diceRolls.text = getString(R.string.rolls_remaining, viewModel.rolls)
+        val dialog = ScoreFragment()
         binding.diceThrow.setOnClickListener {
-            binding.diceRolls.text = getString(R.string.rolls_remaining, viewModel.rolls - 1)
-            lifecycleScope.launch {
+            if (viewModel.rolls > 0) {
+                binding.diceRolls.text = getString(R.string.rolls_remaining, viewModel.rolls - 1)
+                lifecycleScope.launch {
+                    binding.diceThrow.isEnabled = false
+                    viewModel.rollDice()
+                    binding.diceThrow.isEnabled = viewModel.rolls > 0
+                    if (viewModel.rolls == 0) {
+                        viewModel.updateScoreBoard()
+                        dialog.show(parentFragmentManager, "score_selector")
+                    }
+                }
+            } else {
+                dialog.show(parentFragmentManager, "score_selector")
                 binding.diceThrow.isEnabled = false
-                viewModel.rollDice()
-                binding.diceThrow.isEnabled = (viewModel.rolls > 0)
+            }
+
+        }
+
+        parentFragmentManager.setFragmentResultListener(
+            "scoreResult", viewLifecycleOwner
+        ) { _, bundle ->
+            binding.diceThrow.isEnabled = true
+            if (bundle.getBoolean("userSelectedScore")) {
+                binding.diceThrow.text = getString(R.string.dice_throw)
+                binding.diceRolls.text = getString(R.string.rolls_remaining, viewModel.rolls)
+                binding.diceRound.text = getString(R.string.round_count, viewModel.rounds)
+                viewModel.rolls = 3
+                viewModel.rounds += 1
+            } else {
+                binding.diceThrow.text = getString(R.string.select_score)
             }
         }
     }
