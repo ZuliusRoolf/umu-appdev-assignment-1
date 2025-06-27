@@ -34,6 +34,7 @@ class ScoreFragment() : DialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Add rows of options in scoreboard from R.layout.score_row
         viewModel.scoreBoard.observe(viewLifecycleOwner) { scoreArray ->
             scoreArray.forEach { option ->
                 val rowView = layoutInflater.inflate(R.layout.score_row, binding.scoreTable, false)
@@ -50,7 +51,7 @@ class ScoreFragment() : DialogFragment() {
                     card.alpha = 0.5f  // faded appearance
                 } else {
                     card.setOnClickListener {
-                        option.locked = true
+                        option.locked = true // lock the selected option
                         handleSelectedScore()
                     }
                 }
@@ -77,7 +78,7 @@ class ScoreFragment() : DialogFragment() {
             putBoolean("userSelectedScore", true)
         }
         parentFragmentManager.setFragmentResult("scoreResult", result)
-        dismiss()
+        dismiss() // Remove scoreboard dialog
     }
 
     override fun onCancel(dialog: DialogInterface) {

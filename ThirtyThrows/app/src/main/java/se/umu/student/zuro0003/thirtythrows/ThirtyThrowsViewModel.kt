@@ -10,7 +10,7 @@ class ThirtyThrowsViewModel : ViewModel() {
     private val LOW_SUM = 3
     val dices = MutableLiveData<Array<Int>>(Array<Int>(6) { 1 })
     var rolls = 3
-    var round = 1
+    var round = 1 // Max round is determined by scoreNames size
 
     val scoreNames = listOf<String>(
         "Lows",
@@ -39,6 +39,7 @@ class ThirtyThrowsViewModel : ViewModel() {
         }
     }
 
+    //    Toggles all locked dies to neutral and resets the rolls
     fun nextRound() {
         val currentArray = dices.value ?: return
         val newArray = currentArray.copyOf()
@@ -49,21 +50,24 @@ class ThirtyThrowsViewModel : ViewModel() {
         round++
     }
 
+    //    Checks if round 11 is bigger than 10
     fun isGameOver(): Boolean {
         return round > scoreNames.size
     }
 
+    //    Adds all scores from the scoreboard together
     fun getFinalScore(): Int {
         val currentArray = scoreBoard.value ?: return 0
         var totalScore = 0
-        for (option in currentArray) {
-            totalScore += option.score
+        for (item in currentArray) {
+            totalScore += item.score
         }
         return totalScore
     }
 
+    //    Locked dice is represented by negative value, hence multiplied by -1
     fun toggleDice(index: Int) {
-        if (rolls == 3) return
+        if (rolls == 3) return // Ensures that the player cannot toggle dies from last round
         val currentArray = dices.value ?: return
 
         val newArray = currentArray.copyOf()
@@ -71,13 +75,14 @@ class ThirtyThrowsViewModel : ViewModel() {
         dices.value = newArray
     }
 
+    //    Asynchronous dice roll, will randomize all unlocked dice for 0.5 seconds
     suspend fun rollDice() {
         val currentArray = dices.value ?: return
         if (rolls > 0) rolls-- else return
         val newArray = currentArray.copyOf()
         repeat(10) {
             for (i in newArray.indices) {
-                if (newArray[i] > 0)
+                if (newArray[i] > 0) // If dice unlocked
                     newArray[i] = (1..6).random()
             }
             delay(50)
@@ -85,11 +90,14 @@ class ThirtyThrowsViewModel : ViewModel() {
         }
     }
 
+    //    Update all unlocked scores with the sum of current dice
     fun updateScoreBoard(): Array<ScoreOption> {
         val currentScoreBoard = scoreBoard.value ?: return scoreBoard.value
         val updatedScoreBoard = currentScoreBoard.copyOf()
+
         for (i in updatedScoreBoard.indices) {
             if (updatedScoreBoard[i].locked) continue
+            // "Lows" is considered as '0' and "Fours" is considered as '1+3'
             val target = if (i == 0) 0 else i + LOW_SUM
             updatedScoreBoard[i].score = getScore(target)
         }
@@ -97,6 +105,8 @@ class ThirtyThrowsViewModel : ViewModel() {
         return scoreBoard.value
     }
 
+    //    Magical algorithm, finds the best combinations and then multiplies it with the sum in question
+//    1,2,3,4,5,6 where target=6 will give [6] [5,1] [4,2] which is 3*6=18
     fun getScore(target: Int): Int {
         val currentArray = dices.value ?: return -1
         // Convert locked/negative dice to regular dice

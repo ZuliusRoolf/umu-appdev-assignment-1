@@ -18,7 +18,7 @@ class PlayFragment : Fragment() {
             "Cannot access binding because it is null. Is the view visible?"
         }
 
-    private val viewModel: ThirtyThrowsViewModel by activityViewModels()
+    private val game: ThirtyThrowsViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -53,49 +53,55 @@ class PlayFragment : Fragment() {
             R.drawable.gray_die_2,
             R.drawable.gray_die_1
         )
-
-        viewModel.dices.observe(viewLifecycleOwner) { diceArray ->
+//        Convert dice value into texture
+        game.dices.observe(viewLifecycleOwner) { diceArray ->
             diceArray.forEachIndexed { index, value ->
                 val texture = if (value > 0) value - 1 else value + 12
                 dice[index].setImageResource(diceTexture[texture])
             }
         }
+//        Handle dice presses to toggle dice lock
         for (i in dice.indices) {
             dice[i].setOnClickListener {
-                viewModel.toggleDice(i)
+                game.toggleDice(i)
             }
         }
 
-        binding.diceRound.text = getString(R.string.round_count, viewModel.round)
-        binding.diceRolls.text = getString(R.string.rolls_remaining, viewModel.rolls)
+//        Update UI to current game round and dice rolls
+        binding.diceRound.text = getString(R.string.round_count, game.round)
+        binding.diceRolls.text = getString(R.string.rolls_remaining, game.rolls)
         val dialog = ScoreFragment()
         binding.diceThrow.setOnClickListener {
-            if (viewModel.rolls > 0) {
-                binding.diceRolls.text = getString(R.string.rolls_remaining, viewModel.rolls - 1)
+//            Roll the die
+            if (game.rolls > 0) {
+                binding.diceRolls.text = getString(R.string.rolls_remaining, game.rolls - 1)
+//                Disable button during roll "animation" and show ScoreDialogFragment if last roll
                 lifecycleScope.launch {
                     binding.diceThrow.isEnabled = false
-                    viewModel.rollDice()
-                    binding.diceThrow.isEnabled = viewModel.rolls > 0
-                    if (viewModel.rolls == 0) {
-                        viewModel.updateScoreBoard()
+                    game.rollDice()
+                    binding.diceThrow.isEnabled = game.rolls > 0
+                    if (game.rolls == 0) {
+                        game.updateScoreBoard()
                         dialog.show(parentFragmentManager, "score_selector")
                     }
                 }
             } else {
+//                If the user accidentally backed out of scoreboard dialog, let them open it again
                 dialog.show(parentFragmentManager, "score_selector")
                 binding.diceThrow.isEnabled = false
             }
 
         }
 
+//        Handle scoreboard selection event (mainly update UI)
         parentFragmentManager.setFragmentResultListener(
             "scoreResult", viewLifecycleOwner
         ) { _, bundle ->
             binding.diceThrow.isEnabled = true
             if (bundle.getBoolean("userSelectedScore")) {
                 binding.diceThrow.text = getString(R.string.dice_throw)
-                binding.diceRolls.text = getString(R.string.rolls_remaining, viewModel.rolls)
-                binding.diceRound.text = getString(R.string.round_count, viewModel.round)
+                binding.diceRolls.text = getString(R.string.rolls_remaining, game.rolls)
+                binding.diceRound.text = getString(R.string.round_count, game.round)
             } else {
                 binding.diceThrow.text = getString(R.string.select_score)
             }

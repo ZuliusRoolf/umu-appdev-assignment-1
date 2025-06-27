@@ -20,5 +20,5 @@ This repository contains a simple android game called **Thirty** for a [Mobile A
   - Navigate to PlayFragment if not full else GameOverFragment
 - **GameOverFragment**
   - Display final score
-  - Info button to display ScoreFragment
+  - ~~Info button to display ScoreFragment~~
   - Replay button to reset values and navigate to PlayFragment
