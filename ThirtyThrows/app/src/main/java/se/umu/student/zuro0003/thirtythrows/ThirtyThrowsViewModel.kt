@@ -132,13 +132,13 @@ class ThirtyThrowsViewModel : ViewModel() {
         // If the sum is equal to target, add to combinations and exclude values for the next run
         while (i < sortedDice.size) {
             val currentCombination = mutableListOf(sortedDice[i])
-            var j = i + 1
+            var j = i
             var success = false
 
             while (j < sortedDice.size) {
                 val sum = currentCombination.sum()
 
-                when {
+                if (i != j) when {
                     sum < target -> {
                         currentCombination.add(sortedDice[j])
                     }
