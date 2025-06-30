@@ -162,7 +162,8 @@ class ThirtyThrowsViewModel : ViewModel() {
 
                 j++
             }
-            if (!success) i++
+            if (success) i = 0
+            else i++
         }
         return combinations.size * target
     }
