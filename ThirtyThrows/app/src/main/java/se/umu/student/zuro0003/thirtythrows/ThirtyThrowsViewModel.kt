@@ -1,16 +1,36 @@
 package se.umu.student.zuro0003.thirtythrows
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.delay
 
-data class ScoreOption(val title: String, var score: Int, var locked: Boolean)
+data class ScoreOption(
+    val title: String,
+    var score: Int,
+    var locked: Boolean
+)
 
-class ThirtyThrowsViewModel : ViewModel() {
-    private val LOW_SUM = 3
-    val dices = MutableLiveData<Array<Int>>(Array<Int>(6) { 1 })
-    var rolls = 3
-    var round = 1 // Max round is determined by scoreNames size
+class ThirtyThrowsViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel() {
+
+    companion object {
+        private const val DICES_KEY = "DICES_KEY"
+        private const val ROLLS_KEY = "ROLLS_KEY"
+        private const val ROUND_KEY = "ROUND_KEY"
+    }
+
+    private val lowSum = 3
+    private val _dices = savedStateHandle.getLiveData(DICES_KEY, Array(6) { 1 })
+    val dices: LiveData<Array<Int>> = _dices
+    var rolls: Int
+        get() = savedStateHandle[ROLLS_KEY] ?: 3
+        set(value) = savedStateHandle.set(ROLLS_KEY, value)
+
+    // Max round is determined by scoreNames size
+    var round: Int
+        get() = savedStateHandle[ROUND_KEY] ?: 1
+        set(value) = savedStateHandle.set(ROUND_KEY, value)
 
     val scoreNames = listOf<String>(
         "Lows",
@@ -33,7 +53,7 @@ class ThirtyThrowsViewModel : ViewModel() {
     fun resetGame() {
         rolls = 3
         round = 1
-        dices.value = Array<Int>(6) { 1 }
+        _dices.value = Array<Int>(6) { 1 }
         scoreBoard.value = Array<ScoreOption>(scoreNames.size) { i ->
             ScoreOption(scoreNames[i], score = 0, locked = false)
         }
@@ -45,7 +65,7 @@ class ThirtyThrowsViewModel : ViewModel() {
         val newArray = currentArray.copyOf()
         for (i in newArray.indices)
             if (newArray[i] < 0) newArray[i] *= -1
-        dices.value = newArray
+        _dices.value = newArray
         rolls = 3
         round++
     }
@@ -72,7 +92,7 @@ class ThirtyThrowsViewModel : ViewModel() {
 
         val newArray = currentArray.copyOf()
         newArray[index] *= -1
-        dices.value = newArray
+        _dices.value = newArray
     }
 
     //    Asynchronous dice roll, will randomize all unlocked dice for 0.5 seconds
@@ -86,7 +106,7 @@ class ThirtyThrowsViewModel : ViewModel() {
                     newArray[i] = (1..6).random()
             }
             delay(50)
-            dices.value = newArray
+            _dices.value = newArray
         }
     }
 
@@ -98,7 +118,7 @@ class ThirtyThrowsViewModel : ViewModel() {
         for (i in updatedScoreBoard.indices) {
             if (updatedScoreBoard[i].locked) continue
             // "Lows" is considered as '0' and "Fours" is considered as '1+3'
-            val target = if (i == 0) 0 else i + LOW_SUM
+            val target = if (i == 0) 0 else i + lowSum
             updatedScoreBoard[i].score = getScore(target)
         }
         scoreBoard.value = updatedScoreBoard
@@ -115,7 +135,7 @@ class ThirtyThrowsViewModel : ViewModel() {
         if (target == 0) {
             var score = 0
             for (num in original) {
-                score += if (num <= LOW_SUM) num else 0
+                score += if (num <= lowSum) num else 0
             }
             return score
         }
