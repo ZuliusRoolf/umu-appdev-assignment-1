@@ -70,6 +70,8 @@ class PlayFragment : Fragment() {
 //        Update UI to current game round and dice rolls
         binding.diceRound.text = getString(R.string.round_count, game.round)
         binding.diceRolls.text = getString(R.string.rolls_remaining, game.rolls)
+        binding.diceThrow.text =
+            if (game.rolls > 0) getString(R.string.dice_throw) else getString(R.string.select_score)
         val dialog = ScoreFragment()
         binding.diceThrow.setOnClickListener {
 //            Roll the die

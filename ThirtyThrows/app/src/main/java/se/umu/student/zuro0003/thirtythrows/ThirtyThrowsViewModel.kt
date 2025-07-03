@@ -1,16 +1,18 @@
 package se.umu.student.zuro0003.thirtythrows
 
+import android.os.Parcelable
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.delay
+import kotlinx.parcelize.Parcelize
 
+@Parcelize
 data class ScoreOption(
     val title: String,
     var score: Int,
     var locked: Boolean
-)
+) : Parcelable
 
 class ThirtyThrowsViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel() {
 
@@ -18,6 +20,7 @@ class ThirtyThrowsViewModel(private val savedStateHandle: SavedStateHandle) : Vi
         private const val DICES_KEY = "DICES_KEY"
         private const val ROLLS_KEY = "ROLLS_KEY"
         private const val ROUND_KEY = "ROUND_KEY"
+        private const val SCOREBOARD_KEY = "SCOREBOARD_KEY"
     }
 
     private val lowSum = 3
@@ -44,19 +47,18 @@ class ThirtyThrowsViewModel(private val savedStateHandle: SavedStateHandle) : Vi
         "Elevens",
         "Twelves"
     )
-    val scoreBoard = MutableLiveData<Array<ScoreOption>>(
-        Array(scoreNames.size) { i ->
-            ScoreOption(scoreNames[i], score = 0, locked = false)
-        }
+
+    private val _scoreBoard = savedStateHandle.getLiveData(
+        SCOREBOARD_KEY,
+        scoreNames.map { name -> ScoreOption(name, 0, false) }
     )
+    val scoreBoard: LiveData<List<ScoreOption>> = _scoreBoard
 
     fun resetGame() {
         rolls = 3
         round = 1
         _dices.value = Array<Int>(6) { 1 }
-        scoreBoard.value = Array<ScoreOption>(scoreNames.size) { i ->
-            ScoreOption(scoreNames[i], score = 0, locked = false)
-        }
+        _scoreBoard.value = scoreNames.map { name -> ScoreOption(name, 0, false) }
     }
 
     //    Toggles all locked dies to neutral and resets the rolls
@@ -111,9 +113,9 @@ class ThirtyThrowsViewModel(private val savedStateHandle: SavedStateHandle) : Vi
     }
 
     //    Update all unlocked scores with the sum of current dice
-    fun updateScoreBoard(): Array<ScoreOption> {
-        val currentScoreBoard = scoreBoard.value ?: return scoreBoard.value
-        val updatedScoreBoard = currentScoreBoard.copyOf()
+    fun updateScoreBoard() {
+        val currentScoreBoard = scoreBoard.value ?: return
+        val updatedScoreBoard = currentScoreBoard.toMutableList()
 
         for (i in updatedScoreBoard.indices) {
             if (updatedScoreBoard[i].locked) continue
@@ -121,8 +123,8 @@ class ThirtyThrowsViewModel(private val savedStateHandle: SavedStateHandle) : Vi
             val target = if (i == 0) 0 else i + lowSum
             updatedScoreBoard[i].score = getScore(target)
         }
-        scoreBoard.value = updatedScoreBoard
-        return scoreBoard.value
+        _scoreBoard.value = updatedScoreBoard
+        return
     }
 
     //    Magical algorithm, finds the best combinations and then multiplies it with the sum in question
