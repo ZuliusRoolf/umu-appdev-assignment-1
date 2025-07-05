@@ -36,9 +36,9 @@ The interface design is nice, and there are no issues with elements, e.g., overl
 A tip is to look into the SavedStateHandle for your ViewModel and/or implement Parcelable interface.
 Remember the Back navigation needs to work as intended, especially when state saving is fixed. In any stage of the game, it is OK if the back navigation restarts the game or exits the app (but does not result in an invalid state or allow editing the previous round).
   > **Response:** The main variables needed to recreate the game state is now saved in a `SavedStateHandle`. It was quite difficult to find information on how to make a custom data class into something the SavedStateHandle can handle. Finally found Parcelize plugin which enables such behaviour and I don't need to rewrite my scoreboard logic.
-- [ ] *You need to have a score table in the ScoreFragment that shows each score option (scoring target) as the label and the gathered scores for it, e.g., if the user got 24 scores for score option 6, you can have "choice six: 24".
+- [x] *You need to have a score table in the ScoreFragment that shows each score option (scoring target) as the label and the gathered scores for it, e.g., if the user got 24 scores for score option 6, you can have "choice six: 24".
 It is nice that you separate the game and the model logic from the main activity.
-  > **Response:**
+  > **Response:** After some emails of clarifications, I interpret the problem to be the lack of a scoreboard view in the result screen. The prettiest way to do it would be to have a summary, but I feel a little lazy and will just add a button to display the scoreFragment in the result screen instead. I hope this is enough :)
 - [ ] *Avoid having long methods. Try to refactor onViewCreated and break it into smaller methods.
   > **Response:**
 - [ ] +Make sure you have well-commented code. Consider having documentation comments before the method signature, and overall, add more comments to your code (All the methods you make should have documentation comments)

@@ -33,6 +33,9 @@ class GameOverFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.scoreText.text = viewModel.getFinalScore().toString()
+        binding.finalScoreDetails.setOnClickListener {
+            ScoreFragment().show(parentFragmentManager, "score_selector")
+        }
         binding.replayButton.setOnClickListener {
             viewModel.resetGame()
             findNavController().navigate(R.id.action_gameOverFragment_to_playFragment)

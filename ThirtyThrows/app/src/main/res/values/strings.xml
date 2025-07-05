@@ -5,8 +5,10 @@
     <string name="rolls_remaining">Rolls: %1$d</string>
     <string name="dice_throw">Throw</string>
     <string name="select_score">Select Score</string>
+    <string name="score_summary_title">Score Details</string>
     <string name="round_count">Round %1$d</string>
     <string name="final_score">FINAL RESULTS</string>
     <string name="game_restart">Replay</string>
+    <string name="final_score_details">Details</string>
 
 </resources>

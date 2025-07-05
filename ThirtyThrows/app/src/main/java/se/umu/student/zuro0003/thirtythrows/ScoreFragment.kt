@@ -34,6 +34,9 @@ class ScoreFragment() : DialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        if (viewModel.isGameOver()) binding.dialogTitle.text =
+            getString(R.string.score_summary_title)
+
         // Add rows of options in scoreboard from R.layout.score_row
         viewModel.scoreBoard.observe(viewLifecycleOwner) { scoreArray ->
             scoreArray.forEach { option ->
@@ -46,10 +49,10 @@ class ScoreFragment() : DialogFragment() {
                 titleText.text = option.title
                 scoreText.text = option.score.toString()
 
-                if (option.locked) {
+                if (option.locked && !viewModel.isGameOver()) {
                     card.isClickable = false
                     card.alpha = 0.5f  // faded appearance
-                } else {
+                } else if (!viewModel.isGameOver()) {
                     card.setOnClickListener {
                         option.locked = true // lock the selected option
                         handleSelectedScore()
@@ -83,6 +86,7 @@ class ScoreFragment() : DialogFragment() {
 
     override fun onCancel(dialog: DialogInterface) {
         super.onCancel(dialog)
+        if (viewModel.isGameOver()) return
         val result = Bundle().apply {
             putBoolean("userSelectedScore", false)
         }
