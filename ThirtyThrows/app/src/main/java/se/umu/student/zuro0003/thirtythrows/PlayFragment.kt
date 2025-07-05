@@ -31,6 +31,13 @@ class PlayFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        handleDiceUI()
+        handleThrows()
+        handleScoreSelection()
+    }
+
+    /** Binds dice textures to dice state and make each dice toggle when pressed */
+    private fun handleDiceUI() {
         val dice = listOf(
             binding.die0,
             binding.die1,
@@ -53,31 +60,35 @@ class PlayFragment : Fragment() {
             R.drawable.gray_die_2,
             R.drawable.gray_die_1
         )
-//        Convert dice value into texture
+        //        Convert dice value into texture
         game.dices.observe(viewLifecycleOwner) { diceArray ->
             diceArray.forEachIndexed { index, value ->
                 val texture = if (value > 0) value - 1 else value + 12
                 dice[index].setImageResource(diceTexture[texture])
             }
         }
-//        Handle dice presses to toggle dice lock
+        //        Handle dice presses to toggle dice lock
         for (i in dice.indices) {
             dice[i].setOnClickListener {
                 game.toggleDice(i)
             }
         }
+    }
 
-//        Update UI to current game round and dice rolls
+    /** Updates Round and Rolls count.
+     * Determines whether the throw button will roll dice, display score board or go to result screen*/
+    private fun handleThrows() {
+        // Update UI to current game round and dice rolls
         binding.diceRound.text = getString(R.string.round_count, game.round)
         binding.diceRolls.text = getString(R.string.rolls_remaining, game.rolls)
         binding.diceThrow.text =
             if (game.rolls > 0) getString(R.string.dice_throw) else getString(R.string.select_score)
         val dialog = ScoreFragment()
         binding.diceThrow.setOnClickListener {
-//            Roll the die
+            // Roll the die
             if (game.rolls > 0) {
                 binding.diceRolls.text = getString(R.string.rolls_remaining, game.rolls - 1)
-//                Disable button during roll "animation" and show ScoreDialogFragment if last roll
+                // Disable button during roll "animation" and show ScoreDialogFragment if last roll
                 lifecycleScope.launch {
                     binding.diceThrow.isEnabled = false
                     game.rollDice()
@@ -88,14 +99,16 @@ class PlayFragment : Fragment() {
                     }
                 }
             } else {
-//                If the user accidentally backed out of scoreboard dialog, let them open it again
+                // If the user accidentally backed out of scoreboard dialog, let them open it again
                 dialog.show(parentFragmentManager, "score_selector")
                 binding.diceThrow.isEnabled = false
             }
 
         }
+    }
 
-//        Handle scoreboard selection event (mainly update UI)
+    /** Update UI to select score if user dismisses the scoreboard */
+    private fun handleScoreSelection() {
         parentFragmentManager.setFragmentResultListener(
             "scoreResult", viewLifecycleOwner
         ) { _, bundle ->

@@ -37,6 +37,11 @@ class ScoreFragment() : DialogFragment() {
         if (viewModel.isGameOver()) binding.dialogTitle.text =
             getString(R.string.score_summary_title)
 
+        fillScoreBoardTable()
+    }
+
+    /** Fills the dialog fragment with scores defined in ThirtyThrowsViewModel */
+    private fun fillScoreBoardTable() {
         // Add rows of options in scoreboard from R.layout.score_row
         viewModel.scoreBoard.observe(viewLifecycleOwner) { scoreArray ->
             scoreArray.forEach { option ->
@@ -72,6 +77,7 @@ class ScoreFragment() : DialogFragment() {
         return inflater.inflate(R.layout.fragment_score, container, false)
     }
 
+    /** Returns to previous fragment when user selected a score with result of successful selection */
     fun handleSelectedScore() {
         viewModel.nextRound()
         if (viewModel.isGameOver()) {
@@ -84,6 +90,7 @@ class ScoreFragment() : DialogFragment() {
         dismiss() // Remove scoreboard dialog
     }
 
+    /** Handle back button event */
     override fun onCancel(dialog: DialogInterface) {
         super.onCancel(dialog)
         if (viewModel.isGameOver()) return

@@ -39,11 +39,11 @@ Remember the Back navigation needs to work as intended, especially when state sa
 - [x] *You need to have a score table in the ScoreFragment that shows each score option (scoring target) as the label and the gathered scores for it, e.g., if the user got 24 scores for score option 6, you can have "choice six: 24".
 It is nice that you separate the game and the model logic from the main activity.
   > **Response:** After some emails of clarifications, I interpret the problem to be the lack of a scoreboard view in the result screen. The prettiest way to do it would be to have a summary, but I feel a little lazy and will just add a button to display the scoreFragment in the result screen instead. I hope this is enough :)
-- [ ] *Avoid having long methods. Try to refactor onViewCreated and break it into smaller methods.
-  > **Response:**
-- [ ] +Make sure you have well-commented code. Consider having documentation comments before the method signature, and overall, add more comments to your code (All the methods you make should have documentation comments)
+- [x] *Avoid having long methods. Try to refactor onViewCreated and break it into smaller methods.
+  > **Response:** Extracted code in 'PlayFragment' and 'ScoreFragment' into smaller functions.  
+- [x] +Make sure you have well-commented code. Consider having documentation comments before the method signature, and overall, add more comments to your code (All the methods you make should have documentation comments)
 `/* ... */` is a block comment that is used anywhere in the code.
 `/** ... */` is a documentation comment used before method/class signatures for documentation. Supports annotations like @param, @return, and @throws.
-  > **Response:**
+  > **Response:** Added some proper comments to the functions in fragments. Not much mostly wanted to get a feel for it.
 - [ ] +If you include annotations such as @paramyou can specify what different parameters mean clearly and in a structured way. Or @return to document what a function returns.
-  > **Response:**
+  > **Response:** Noted for the next assignment :)
