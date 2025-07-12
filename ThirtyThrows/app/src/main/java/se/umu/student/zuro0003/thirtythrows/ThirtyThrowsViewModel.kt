@@ -132,7 +132,7 @@ class ThirtyThrowsViewModel(private val savedStateHandle: SavedStateHandle) : Vi
     fun getScore(target: Int): Int {
         val currentArray = dices.value ?: return -1
         // Convert locked/negative dice to regular dice
-        val original = currentArray.copyOf().map { kotlin.math.abs(it) }.toTypedArray()
+        val original = currentArray.copyOf().map { kotlin.math.abs(it) }.toIntArray()
         // Handle "Lows" which is the sum of Ones, Twos and Threes
         if (target == 0) {
             var score = 0
@@ -142,51 +142,65 @@ class ThirtyThrowsViewModel(private val savedStateHandle: SavedStateHandle) : Vi
             return score
         }
 
-        // Algorithm to calculate the best valid combinations
-        // Sort the list as dices with highest value is more important
-        val sortedDice = original.sortedDescending().toMutableList()
-        val combinations = mutableListOf<List<Int>>()
-        var i = 0
+        // Handle all other sums
+        val combinations = combinationSumCounts(original, target)
+        return combinations.size * target
+    }
 
-        // Go through the list and add the next equal or lower value to combination
-        // If the sum is less than target, add another equal or lower value
-        // If the sum is greater than target, replace the last added value with equal or lower value
-        // If the sum is equal to target, add to combinations and exclude values for the next run
-        while (i < sortedDice.size) {
-            val currentCombination = mutableListOf(sortedDice[i])
-            var j = i
-            var success = false
+    /** Finds all potential combinations and then removes combinations based on the limited resources. */
+    fun combinationSumCounts(candidates: IntArray, target: Int): List<List<Int>> {
+        val potentials = mutableListOf<List<Int>>()
+        val combination = mutableListOf<Int>()
+        val candidates = candidates.toMutableList()
+        candidates.sort()
+        fun backtrack(start: Int, remain: Int) {
+            // Combination == target sum
+            if (remain == 0) {
+                potentials.add(ArrayList(combination))
+                return
+            }
+            // Combination > target sum
+            if (remain < 0) return
 
-            while (j < sortedDice.size) {
-                val sum = currentCombination.sum()
+            // Combination < target sum
+            // Add all potential values recursively to include backtracking
+            for (i in start until candidates.size) {
+                val current = candidates[i]
+                combination.add(current)
+                backtrack(i + 1, remain - current)
+                combination.removeAt(combination.size - 1)
+            }
+        }
+        backtrack(0, target)
 
-                if (i != j) when {
-                    sum < target -> {
-                        currentCombination.add(sortedDice[j])
-                    }
+        // Sort potential combinations by size
+        potentials.sortWith(Comparator { lis1: List<Int>, lis2: List<Int> -> lis1.size - lis2.size })
+        val result = mutableListOf<List<Int>>()
 
-                    sum > target -> {
-                        if (currentCombination.isNotEmpty()) {
-                            currentCombination.removeAt(currentCombination.lastIndex)
-                        }
-                        currentCombination.add(sortedDice[j])
-                    }
-                }
+        // Go through each potential combination
+        val iterator = potentials.iterator()
+        while (iterator.hasNext()) {
+            val potentialCombination = iterator.next()
+            val tempCandidates = candidates.toMutableList()
+            var isValid = true
 
-                if (currentCombination.sum() == target) {
-                    combinations.add(currentCombination.toList())
-                    success = true
-                    for (num in currentCombination) {
-                        sortedDice.remove(num)
-                    }
+            // Check if all values exist in original candidates
+            for (value in potentialCombination) {
+                if (!tempCandidates.remove(value)) {
+                    isValid = false
                     break
                 }
-
-                j++
             }
-            if (success) i = 0
-            else i++
+
+            // If yes, remove all selected values from the pool
+            if (isValid) {
+                for (value in potentialCombination) {
+                    candidates.remove(value)
+                }
+                iterator.remove()
+                result.add(potentialCombination)
+            }
         }
-        return combinations.size * target
+        return result
     }
 }
